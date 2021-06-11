@@ -1,0 +1,24 @@
+2021-01-11 23:12:26,526 - F:/autotest/scripts1/model/bank/bank_req.py[line:36] - INFO: 加密地址：http://10.132.4.135:9050/plumberpay/cxf/mockit/reqEncrySign
+2021-01-11 23:12:26,526 - F:/autotest/scripts1/model/bank/bank_req.py[line:37] - INFO: 加密参数:"http://10.132.4.135:9050/plumber/cxf/chnel/v1/customer/custInfoQuery"
+2021-01-11 23:12:29,808 - F:/autotest/scripts1/model/bank/bank_req.py[line:89] - ERROR: 业务参数:http://10.132.4.135:9050/plumber/cxf/chnel/v1/customer/custInfoQuery
+2021-01-11 23:12:29,808 - F:/autotest/scripts1/model/bank/bank_req.py[line:90] - ERROR: <function format_exc at 0x000001FD108DA8C8>
+2021-01-11 23:12:48,338 - F:/autotest/scripts1/model/bank/bank_req.py[line:36] - INFO: 加密地址：http://10.132.4.135:9050/plumberpay/cxf/mockit/reqEncrySign
+2021-01-11 23:12:48,338 - F:/autotest/scripts1/model/bank/bank_req.py[line:37] - INFO: 加密参数:"http://10.132.4.135:9050/plumber/cxf/chnel/v1/customer/custInfoQuery"
+2021-01-11 23:12:48,386 - F:/autotest/scripts1/model/bank/bank_req.py[line:89] - ERROR: 业务参数:http://10.132.4.135:9050/plumber/cxf/chnel/v1/customer/custInfoQuery
+2021-01-11 23:12:48,386 - F:/autotest/scripts1/model/bank/bank_req.py[line:90] - ERROR: <function format_exc at 0x00000230DF93A8C8>
+2021-01-11 23:12:56,237 - F:/autotest/scripts1/model/bank/bank_req.py[line:36] - INFO: 加密地址：http://10.132.4.135:9050/plumberpay/cxf/mockit/reqEncrySign
+2021-01-11 23:12:56,237 - F:/autotest/scripts1/model/bank/bank_req.py[line:37] - INFO: 加密参数:"http://10.132.4.135:9050/plumber/cxf/chnel/v1/customer/custInfoQuery"
+2021-01-11 23:12:56,275 - F:/autotest/scripts1/model/bank/bank_req.py[line:89] - ERROR: 业务参数:http://10.132.4.135:9050/plumber/cxf/chnel/v1/customer/custInfoQuery
+2021-01-11 23:12:56,276 - F:/autotest/scripts1/model/bank/bank_req.py[line:90] - ERROR: <function format_exc at 0x0000020EC439A8C8>
+2021-01-11 23:39:47,257 - F:/autotest/scripts1/model/bank/bank_req.py[line:36] - INFO: 加密地址：http://sit2.elimen.com.cn:5515/plumberpay/cxf/mockit/reqEncrySign
+2021-01-11 23:39:47,257 - F:/autotest/scripts1/model/bank/bank_req.py[line:37] - INFO: 加密参数:"http://sit2.elimen.com.cn:5515/plumber/cxf/chnel/v1/customer/custInfoQuery"
+2021-01-11 23:39:47,367 - F:/autotest/scripts1/model/bank/bank_req.py[line:89] - ERROR: 业务参数:http://sit2.elimen.com.cn:5515/plumber/cxf/chnel/v1/customer/custInfoQuery
+2021-01-11 23:39:47,367 - F:/autotest/scripts1/model/bank/bank_req.py[line:90] - ERROR: <function format_exc at 0x000001E46665A8C8>
+2021-01-11 23:47:00,765 - F:/autotest/scripts1/model/bank/bank_req.py[line:36] - INFO: 加密地址：http://sit2.elimen.com.cn:5515/plumberpay/cxf/mockit/reqEncrySign
+2021-01-11 23:47:00,765 - F:/autotest/scripts1/model/bank/bank_req.py[line:37] - INFO: 加密参数:"http://sit2.elimen.com.cn:5515/plumber/cxf/chnel/v1/customer/custInfoQuery"
+2021-01-11 23:47:00,875 - F:/autotest/scripts1/model/bank/bank_req.py[line:89] - ERROR: 业务参数:http://sit2.elimen.com.cn:5515/plumber/cxf/chnel/v1/customer/custInfoQuery
+2021-01-11 23:47:00,875 - F:/autotest/scripts1/model/bank/bank_req.py[line:90] - ERROR: <function format_exc at 0x000001B88748B8C8>
+2021-01-11 23:47:43,282 - F:/autotest/scripts1/model/bank/bank_req.py[line:36] - INFO: 加密地址：http://sit2.elimen.com.cn:5515/plumberpay/cxf/mockit/reqEncrySign
+2021-01-11 23:47:43,282 - F:/autotest/scripts1/model/bank/bank_req.py[line:37] - INFO: 加密参数:"http://sit2.elimen.com.cn:5515/plumber/cxf/chnel/v1/customer/custInfoQuery"
+2021-01-11 23:47:43,384 - F:/autotest/scripts1/model/bank/bank_req.py[line:89] - ERROR: 业务参数:http://sit2.elimen.com.cn:5515/plumber/cxf/chnel/v1/customer/custInfoQuery
+2021-01-11 23:47:43,384 - F:/autotest/scripts1/model/bank/bank_req.py[line:90] - ERROR: <function format_exc at 0x000002527C6EB8C8>

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Test Report</title>
+    <style>body {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  /* do not increase min-width as some may use split screens */
+  min-width: 800px;
+  color: #999;
+}
+
+h1 {
+  font-size: 24px;
+  color: black;
+}
+
+h2 {
+  font-size: 16px;
+  color: black;
+}
+
+p {
+  color: black;
+}
+
+a {
+  color: #999;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/******************************
+ * SUMMARY INFORMATION
+ ******************************/
+#environment td {
+  padding: 5px;
+  border: 1px solid #E6E6E6;
+}
+#environment tr:nth-child(odd) {
+  background-color: #f6f6f6;
+}
+
+/******************************
+ * TEST RESULT COLORS
+ ******************************/
+span.passed,
+.passed .col-result {
+  color: green;
+}
+
+span.skipped,
+span.xfailed,
+span.rerun,
+.skipped .col-result,
+.xfailed .col-result,
+.rerun .col-result {
+  color: orange;
+}
+
+span.error,
+span.failed,
+span.xpassed,
+.error .col-result,
+.failed .col-result,
+.xpassed .col-result {
+  color: red;
+}
+
+/******************************
+ * RESULTS TABLE
+ *
+ * 1. Table Layout
+ * 2. Extra
+ * 3. Sorting items
+ *
+ ******************************/
+/*------------------
+ * 1. Table Layout
+ *------------------*/
+#results-table {
+  border: 1px solid #e6e6e6;
+  color: #999;
+  font-size: 12px;
+  width: 100%;
+}
+#results-table th,
+#results-table td {
+  padding: 5px;
+  border: 1px solid #E6E6E6;
+  text-align: left;
+}
+#results-table th {
+  font-weight: bold;
+}
+
+/*------------------
+ * 2. Extra
+ *------------------*/
+.log {
+  background-color: #e6e6e6;
+  border: 1px solid #e6e6e6;
+  color: black;
+  display: block;
+  font-family: "Courier New", Courier, monospace;
+  height: 230px;
+  overflow-y: scroll;
+  padding: 5px;
+  white-space: pre-wrap;
+}
+.log:only-child {
+  height: inherit;
+}
+
+div.image {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin-left: 5px;
+  overflow: hidden;
+  width: 320px;
+}
+div.image img {
+  width: 320px;
+}
+
+div.video {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin-left: 5px;
+  overflow: hidden;
+  width: 320px;
+}
+div.video video {
+  overflow: hidden;
+  width: 320px;
+  height: 240px;
+}
+
+.collapsed {
+  display: none;
+}
+
+.expander::after {
+  content: " (show details)";
+  color: #BBB;
+  font-style: italic;
+  cursor: pointer;
+}
+
+.collapser::after {
+  content: " (hide details)";
+  color: #BBB;
+  font-style: italic;
+  cursor: pointer;
+}
+
+/*------------------
+ * 3. Sorting items
+ *------------------*/
+.sortable {
+  cursor: pointer;
+}
+
+.sort-icon {
+  font-size: 0px;
+  float: left;
+  margin-right: 5px;
+  margin-top: 5px;
+  /*triangle*/
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+}
+.inactive .sort-icon {
+  /*finish triangle*/
+  border-top: 8px solid #E6E6E6;
+}
+.asc.active .sort-icon {
+  /*finish triangle*/
+  border-bottom: 8px solid #999;
+}
+.desc.active .sort-icon {
+  /*finish triangle*/
+  border-top: 8px solid #999;
+}
+</style></head>
+  <body onLoad="init()">
+    <script>/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+
+function toArray(iter) {
+    if (iter === null) {
+        return null;
+    }
+    return Array.prototype.slice.call(iter);
+}
+
+function find(selector, elem) { // eslint-disable-line no-redeclare
+    if (!elem) {
+        elem = document;
+    }
+    return elem.querySelector(selector);
+}
+
+function findAll(selector, elem) {
+    if (!elem) {
+        elem = document;
+    }
+    return toArray(elem.querySelectorAll(selector));
+}
+
+function sortColumn(elem) {
+    toggleSortStates(elem);
+    const colIndex = toArray(elem.parentNode.childNodes).indexOf(elem);
+    let key;
+    if (elem.classList.contains('result')) {
+        key = keyResult;
+    } else if (elem.classList.contains('links')) {
+        key = keyLink;
+    } else {
+        key = keyAlpha;
+    }
+    sortTable(elem, key(colIndex));
+}
+
+function showAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(showExtras);
+}
+
+function hideAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(hideExtras);
+}
+
+function showExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.remove('collapsed');
+    expandcollapse.classList.remove('expander');
+    expandcollapse.classList.add('collapser');
+}
+
+function hideExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.add('collapsed');
+    expandcollapse.classList.remove('collapser');
+    expandcollapse.classList.add('expander');
+}
+
+function showFilters() {
+    const filterItems = document.getElementsByClassName('filter');
+    for (let i = 0; i < filterItems.length; i++)
+        filterItems[i].hidden = false;
+}
+
+function addCollapse() {
+    // Add links for show/hide all
+    const resulttable = find('table#results-table');
+    const showhideall = document.createElement('p');
+    showhideall.innerHTML = '<a href="javascript:showAllExtras()">Show all details</a> / ' +
+                            '<a href="javascript:hideAllExtras()">Hide all details</a>';
+    resulttable.parentElement.insertBefore(showhideall, resulttable);
+
+    // Add show/hide link to each result
+    findAll('.col-result').forEach(function(elem) {
+        const collapsed = getQueryParameter('collapsed') || 'Passed';
+        const extras = elem.parentNode.nextElementSibling;
+        const expandcollapse = document.createElement('span');
+        if (extras.classList.contains('collapsed')) {
+            expandcollapse.classList.add('expander');
+        } else if (collapsed.includes(elem.innerHTML)) {
+            extras.classList.add('collapsed');
+            expandcollapse.classList.add('expander');
+        } else {
+            expandcollapse.classList.add('collapser');
+        }
+        elem.appendChild(expandcollapse);
+
+        elem.addEventListener('click', function(event) {
+            if (event.currentTarget.parentNode.nextElementSibling.classList.contains('collapsed')) {
+                showExtras(event.currentTarget);
+            } else {
+                hideExtras(event.currentTarget);
+            }
+        });
+    });
+}
+
+function getQueryParameter(name) {
+    const match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+
+function init () { // eslint-disable-line no-unused-vars
+    resetSortHeaders();
+
+    addCollapse();
+
+    showFilters();
+
+    sortColumn(find('.initial-sort'));
+
+    findAll('.sortable').forEach(function(elem) {
+        elem.addEventListener('click',
+            function() {
+                sortColumn(elem);
+            }, false);
+    });
+}
+
+function sortTable(clicked, keyFunc) {
+    const rows = findAll('.results-table-row');
+    const reversed = !clicked.classList.contains('asc');
+    const sortedRows = sort(rows, keyFunc, reversed);
+    /* Whole table is removed here because browsers acts much slower
+     * when appending existing elements.
+     */
+    const thead = document.getElementById('results-table-head');
+    document.getElementById('results-table').remove();
+    const parent = document.createElement('table');
+    parent.id = 'results-table';
+    parent.appendChild(thead);
+    sortedRows.forEach(function(elem) {
+        parent.appendChild(elem);
+    });
+    document.getElementsByTagName('BODY')[0].appendChild(parent);
+}
+
+function sort(items, keyFunc, reversed) {
+    const sortArray = items.map(function(item, i) {
+        return [keyFunc(item), i];
+    });
+
+    sortArray.sort(function(a, b) {
+        const keyA = a[0];
+        const keyB = b[0];
+
+        if (keyA == keyB) return 0;
+
+        if (reversed) {
+            return keyA < keyB ? 1 : -1;
+        } else {
+            return keyA > keyB ? 1 : -1;
+        }
+    });
+
+    return sortArray.map(function(item) {
+        const index = item[1];
+        return items[index];
+    });
+}
+
+function keyAlpha(colIndex) {
+    return function(elem) {
+        return elem.childNodes[1].childNodes[colIndex].firstChild.data.toLowerCase();
+    };
+}
+
+function keyLink(colIndex) {
+    return function(elem) {
+        const dataCell = elem.childNodes[1].childNodes[colIndex].firstChild;
+        return dataCell == null ? '' : dataCell.innerText.toLowerCase();
+    };
+}
+
+function keyResult(colIndex) {
+    return function(elem) {
+        const strings = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed',
+            'Skipped', 'Passed'];
+        return strings.indexOf(elem.childNodes[1].childNodes[colIndex].firstChild.data);
+    };
+}
+
+function resetSortHeaders() {
+    findAll('.sort-icon').forEach(function(elem) {
+        elem.parentNode.removeChild(elem);
+    });
+    findAll('.sortable').forEach(function(elem) {
+        const icon = document.createElement('div');
+        icon.className = 'sort-icon';
+        icon.textContent = 'vvv';
+        elem.insertBefore(icon, elem.firstChild);
+        elem.classList.remove('desc', 'active');
+        elem.classList.add('asc', 'inactive');
+    });
+}
+
+function toggleSortStates(elem) {
+    //if active, toggle between asc and desc
+    if (elem.classList.contains('active')) {
+        elem.classList.toggle('asc');
+        elem.classList.toggle('desc');
+    }
+
+    //if inactive, reset all other functions and add ascending active
+    if (elem.classList.contains('inactive')) {
+        resetSortHeaders();
+        elem.classList.remove('inactive');
+        elem.classList.add('active');
+    }
+}
+
+function isAllRowsHidden(value) {
+    return value.hidden == false;
+}
+
+function filterTable(elem) { // eslint-disable-line no-unused-vars
+    const outcomeAtt = 'data-test-result';
+    const outcome = elem.getAttribute(outcomeAtt);
+    const classOutcome = outcome + ' results-table-row';
+    const outcomeRows = document.getElementsByClassName(classOutcome);
+
+    for(let i = 0; i < outcomeRows.length; i++){
+        outcomeRows[i].hidden = !elem.checked;
+    }
+
+    const rows = findAll('.results-table-row').filter(isAllRowsHidden);
+    const allRowsHidden = rows.length == 0 ? true : false;
+    const notFoundMessage = document.getElementById('not-found-message');
+    notFoundMessage.hidden = !allRowsHidden;
+}
+</script>
+    <h1>1894rport.html</h1>
+    <p>Report generated on 13-Jan-2021 at 19:54:50 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a> v3.1.1</p>
+    <h2>Environment</h2>
+    <table id="environment">
+      <tr>
+        <td>JAVA_HOME</td>
+        <td>C:\Program Files\Java\jdk1.8.0_251</td></tr>
+      <tr>
+        <td>Packages</td>
+        <td>{"pluggy": "0.13.1", "py": "1.9.0", "pytest": "6.1.2"}</td></tr>
+      <tr>
+        <td>Platform</td>
+        <td>Windows-10-10.0.18362-SP0</td></tr>
+      <tr>
+        <td>Plugins</td>
+        <td>{"html": "3.1.1", "metadata": "1.11.0"}</td></tr>
+      <tr>
+        <td>Python</td>
+        <td>3.7.2</td></tr></table>
+    <h2>Summary</h2>
+    <p>所属部门: 开发管理中心</p>
+    <p>测试人员: 测试组</p>
+    <p>1 tests ran in 2.35 seconds. </p>
+    <p class="filter" hidden="true">(Un)check the boxes to filter the results.</p><input checked="true" class="filter" data-test-result="passed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="passed">0 passed</span>, <input checked="true" class="filter" data-test-result="skipped" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="skipped">0 skipped</span>, <input checked="true" class="filter" data-test-result="failed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="failed">1 failed</span>, <input checked="true" class="filter" data-test-result="error" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="error">0 errors</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xfailed">0 expected failures</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xpassed">0 unexpected passes</span>
+    <h2>Results</h2>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable result initial-sort" col="result">Result</th>
+          <th class="sortable" col="name">Test</th>
+          <th>Description</th>
+          <th class="sortable time" col="time">Time</th>
+          <th class="sortable" col="duration">Duration</th></tr>
+        <tr hidden="true" id="not-found-message">
+          <th colspan="5">No results found. Try to check the filters</th></tr></thead>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">cases/goodlife/test_000_goodlife.py::test_000_goodlife</td>
+          <td class="col-duration">2.19</td>
+          <td class="col-time">2021-01-13 11:54:50.057423</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">test_host = &#x27;135&#x27;<br/><br/>    def test_000_goodlife(test_host):<br/>        i = 0<br/>        cases_list = data_list(test_host)<br/>        case = cases_list.cases[i][&quot;case&quot;]<br/>        expection = cases_list.cases[i][&quot;expection&quot;]<br/>        resp = goodlife_req(test_host,api,case)<br/>        # print(resp.status_code)<br/>&gt;       assert resp.status_code == 200, &quot;相应状态不正确{}&quot;.format(resp.status_code)<br/><span class="error">E       AttributeError: &#x27;NoneType&#x27; object has no attribute &#x27;status_code&#x27;</span><br/><br/>cases\goodlife\test_000_goodlife.py:34: AttributeError<br/> -------------------------------Captured log call-------------------------------- <br/>INFO     F:/autotest/scripts1/log/goodlife/20210113_goodlife_all.log:goodlife_req.py:30 加密地址：http://sit2.elimen.com.cn:5515/plumber/cxf/mockit/reqEncrySign
+INFO     F:/autotest/scripts1/log/goodlife/20210113_goodlife_all.log:goodlife_req.py:31 加密报文：{&#x27;channel&#x27;: &#x27;00000009&#x27;, &#x27;data&#x27;: {&#x27;commonInput&#x27;: {&#x27;version&#x27;: &#x27;1.0.0&#x27;, &#x27;channel&#x27;: &#x27;00000009&#x27;, &#x27;reqDate&#x27;: &#x27;20210107&#x27;, &#x27;reqTime&#x27;: &#x27;181317&#x27;, &#x27;remark&#x27;: &#x27;&#x27;}, &#x27;certNo&#x27;: 110101199003076604}}
+ERROR    F:/autotest/scripts1/log/goodlife/20210113_goodlife_all.log:goodlife_req.py:35 加密报文：{&#x27;channel&#x27;: &#x27;00000009&#x27;, &#x27;data&#x27;: {&#x27;commonInput&#x27;: {&#x27;version&#x27;: &#x27;1.0.0&#x27;, &#x27;channel&#x27;: &#x27;00000009&#x27;, &#x27;reqDate&#x27;: &#x27;20210107&#x27;, &#x27;reqTime&#x27;: &#x27;181317&#x27;, &#x27;remark&#x27;: &#x27;&#x27;}, &#x27;certNo&#x27;: 110101199003076604}}
+ERROR    F:/autotest/scripts1/log/goodlife/20210113_goodlife_all.log:goodlife_req.py:36 Traceback (most recent call last):
+  File &quot;d:\pythonlzx\lib\site-packages\urllib3\connection.py&quot;, line 160, in _new_conn
+    (self._dns_host, self.port), self.timeout, **extra_kw
+  File &quot;d:\pythonlzx\lib\site-packages\urllib3\util\connection.py&quot;, line 84, in create_connection
+    raise err
+  File &quot;d:\pythonlzx\lib\site-packages\urllib3\util\connection.py&quot;, line 74, in create_connection
+    sock.connect(sa)
+ConnectionRefusedError: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File &quot;d:\pythonlzx\lib\site-packages\urllib3\connectionpool.py&quot;, line 677, in urlopen
+    chunked=chunked,
+  File &quot;d:\pythonlzx\lib\site-packages\urllib3\connectionpool.py&quot;, line 392, in _make_request
+    conn.request(method, url, **httplib_request_kw)
+  File &quot;d:\pythonlzx\lib\http\client.py&quot;, line 1229, in request
+    self._send_request(method, url, body, headers, encode_chunked)
+  File &quot;d:\pythonlzx\lib\http\client.py&quot;, line 1275, in _send_request
+    self.endheaders(body, encode_chunked=encode_chunked)
+  File &quot;d:\pythonlzx\lib\http\client.py&quot;, line 1224, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File &quot;d:\pythonlzx\lib\http\client.py&quot;, line 1016, in _send_output
+    self.send(msg)
+  File &quot;d:\pythonlzx\lib\http\client.py&quot;, line 956, in send
+    self.connect()
+  File &quot;d:\pythonlzx\lib\site-packages\urllib3\connection.py&quot;, line 187, in connect
+    conn = self._new_conn()
+  File &quot;d:\pythonlzx\lib\site-packages\urllib3\connection.py&quot;, line 172, in _new_conn
+    self, &quot;Failed to establish a new connection: %s&quot; % e
+urllib3.exceptions.NewConnectionError: &lt;urllib3.connection.HTTPConnection object at 0x0000024C037ECB00&gt;: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File &quot;d:\pythonlzx\lib\site-packages\requests\adapters.py&quot;, line 449, in send
+    timeout=timeout
+  File &quot;d:\pythonlzx\lib\site-packages\urllib3\connectionpool.py&quot;, line 725, in urlopen
+    method, url, error=e, _pool=self, _stacktrace=sys.exc_info()[2]
+  File &quot;d:\pythonlzx\lib\site-packages\urllib3\util\retry.py&quot;, line 439, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPConnectionPool(host=&#x27;sit2.elimen.com.cn&#x27;, port=5515): Max retries exceeded with url: /plumber/cxf/mockit/reqEncrySign (Caused by NewConnectionError(&#x27;&lt;urllib3.connection.HTTPConnection object at 0x0000024C037ECB00&gt;: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。&#x27;))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File &quot;F:\autotest\scripts1\model\goodlife\goodlife_req.py&quot;, line 32, in ReqEncrySign
+    resp = requests.request(method,url,headers=header,data=payload)
+  File &quot;d:\pythonlzx\lib\site-packages\requests\api.py&quot;, line 61, in request
+    return session.request(method=method, url=url, **kwargs)
+  File &quot;d:\pythonlzx\lib\site-packages\requests\sessions.py&quot;, line 530, in request
+    resp = self.send(prep, **send_kwargs)
+  File &quot;d:\pythonlzx\lib\site-packages\requests\sessions.py&quot;, line 643, in send
+    r = adapter.send(request, **kwargs)
+  File &quot;d:\pythonlzx\lib\site-packages\requests\adapters.py&quot;, line 516, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPConnectionPool(host=&#x27;sit2.elimen.com.cn&#x27;, port=5515): Max retries exceeded with url: /plumber/cxf/mockit/reqEncrySign (Caused by NewConnectionError(&#x27;&lt;urllib3.connection.HTTPConnection object at 0x0000024C037ECB00&gt;: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。&#x27;))
+
+ERROR    F:/autotest/scripts1/log/goodlife/20210113_goodlife_all.log:goodlife_req.py:75 业务参数:{&#x27;channel&#x27;: &#x27;00000009&#x27;, &#x27;data&#x27;: {&#x27;commonInput&#x27;: {&#x27;version&#x27;: &#x27;1.0.0&#x27;, &#x27;channel&#x27;: &#x27;00000009&#x27;, &#x27;reqDate&#x27;: &#x27;20210107&#x27;, &#x27;reqTime&#x27;: &#x27;181317&#x27;, &#x27;remark&#x27;: &#x27;&#x27;}, &#x27;certNo&#x27;: 110101199003076604}}
+ERROR    F:/autotest/scripts1/log/goodlife/20210113_goodlife_all.log:goodlife_req.py:76 &lt;function format_exc at 0x0000024C02604D90&gt;<br/></div></td></tr></tbody></table></body></html>

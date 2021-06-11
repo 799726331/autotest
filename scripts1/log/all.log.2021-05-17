@@ -1,0 +1,15 @@
+2021-05-17 16:50:33,020 - F:\autotest\scripts1\utils\log.py[line:84] - DEBUG: debug
+2021-05-17 16:50:33,022 - F:\autotest\scripts1\utils\log.py[line:85] - INFO: info
+2021-05-17 16:50:33,022 - F:\autotest\scripts1\utils\log.py[line:86] - WARNING: 警告
+2021-05-17 16:50:33,022 - F:\autotest\scripts1\utils\log.py[line:87] - ERROR: 报错
+2021-05-17 16:50:33,022 - F:\autotest\scripts1\utils\log.py[line:88] - CRITICAL: 严重
+2021-05-17 16:51:04,814 - F:\autotest\scripts1\utils\log.py[line:84] - DEBUG: debug
+2021-05-17 16:51:04,814 - F:\autotest\scripts1\utils\log.py[line:85] - INFO: info
+2021-05-17 16:51:04,814 - F:\autotest\scripts1\utils\log.py[line:86] - WARNING: 警告
+2021-05-17 16:51:04,814 - F:\autotest\scripts1\utils\log.py[line:87] - ERROR: 报错
+2021-05-17 16:51:04,814 - F:\autotest\scripts1\utils\log.py[line:88] - CRITICAL: 严重
+2021-05-17 16:52:14,122 - F:\autotest\scripts1\utils\log.py[line:84] - DEBUG: debug
+2021-05-17 16:52:14,123 - F:\autotest\scripts1\utils\log.py[line:85] - INFO: info
+2021-05-17 16:52:14,123 - F:\autotest\scripts1\utils\log.py[line:86] - WARNING: 警告
+2021-05-17 16:52:14,123 - F:\autotest\scripts1\utils\log.py[line:87] - ERROR: 报错
+2021-05-17 16:52:14,123 - F:\autotest\scripts1\utils\log.py[line:88] - CRITICAL: 严重

@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Test Report</title>
+    <style>body {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  /* do not increase min-width as some may use split screens */
+  min-width: 800px;
+  color: #999;
+}
+
+h1 {
+  font-size: 24px;
+  color: black;
+}
+
+h2 {
+  font-size: 16px;
+  color: black;
+}
+
+p {
+  color: black;
+}
+
+a {
+  color: #999;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/******************************
+ * SUMMARY INFORMATION
+ ******************************/
+#environment td {
+  padding: 5px;
+  border: 1px solid #E6E6E6;
+}
+#environment tr:nth-child(odd) {
+  background-color: #f6f6f6;
+}
+
+/******************************
+ * TEST RESULT COLORS
+ ******************************/
+span.passed,
+.passed .col-result {
+  color: green;
+}
+
+span.skipped,
+span.xfailed,
+span.rerun,
+.skipped .col-result,
+.xfailed .col-result,
+.rerun .col-result {
+  color: orange;
+}
+
+span.error,
+span.failed,
+span.xpassed,
+.error .col-result,
+.failed .col-result,
+.xpassed .col-result {
+  color: red;
+}
+
+/******************************
+ * RESULTS TABLE
+ *
+ * 1. Table Layout
+ * 2. Extra
+ * 3. Sorting items
+ *
+ ******************************/
+/*------------------
+ * 1. Table Layout
+ *------------------*/
+#results-table {
+  border: 1px solid #e6e6e6;
+  color: #999;
+  font-size: 12px;
+  width: 100%;
+}
+#results-table th,
+#results-table td {
+  padding: 5px;
+  border: 1px solid #E6E6E6;
+  text-align: left;
+}
+#results-table th {
+  font-weight: bold;
+}
+
+/*------------------
+ * 2. Extra
+ *------------------*/
+.log {
+  background-color: #e6e6e6;
+  border: 1px solid #e6e6e6;
+  color: black;
+  display: block;
+  font-family: "Courier New", Courier, monospace;
+  height: 230px;
+  overflow-y: scroll;
+  padding: 5px;
+  white-space: pre-wrap;
+}
+.log:only-child {
+  height: inherit;
+}
+
+div.image {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin-left: 5px;
+  overflow: hidden;
+  width: 320px;
+}
+div.image img {
+  width: 320px;
+}
+
+div.video {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin-left: 5px;
+  overflow: hidden;
+  width: 320px;
+}
+div.video video {
+  overflow: hidden;
+  width: 320px;
+  height: 240px;
+}
+
+.collapsed {
+  display: none;
+}
+
+.expander::after {
+  content: " (show details)";
+  color: #BBB;
+  font-style: italic;
+  cursor: pointer;
+}
+
+.collapser::after {
+  content: " (hide details)";
+  color: #BBB;
+  font-style: italic;
+  cursor: pointer;
+}
+
+/*------------------
+ * 3. Sorting items
+ *------------------*/
+.sortable {
+  cursor: pointer;
+}
+
+.sort-icon {
+  font-size: 0px;
+  float: left;
+  margin-right: 5px;
+  margin-top: 5px;
+  /*triangle*/
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+}
+.inactive .sort-icon {
+  /*finish triangle*/
+  border-top: 8px solid #E6E6E6;
+}
+.asc.active .sort-icon {
+  /*finish triangle*/
+  border-bottom: 8px solid #999;
+}
+.desc.active .sort-icon {
+  /*finish triangle*/
+  border-top: 8px solid #999;
+}
+</style></head>
+  <body onLoad="init()">
+    <script>/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+
+function toArray(iter) {
+    if (iter === null) {
+        return null;
+    }
+    return Array.prototype.slice.call(iter);
+}
+
+function find(selector, elem) { // eslint-disable-line no-redeclare
+    if (!elem) {
+        elem = document;
+    }
+    return elem.querySelector(selector);
+}
+
+function findAll(selector, elem) {
+    if (!elem) {
+        elem = document;
+    }
+    return toArray(elem.querySelectorAll(selector));
+}
+
+function sortColumn(elem) {
+    toggleSortStates(elem);
+    const colIndex = toArray(elem.parentNode.childNodes).indexOf(elem);
+    let key;
+    if (elem.classList.contains('result')) {
+        key = keyResult;
+    } else if (elem.classList.contains('links')) {
+        key = keyLink;
+    } else {
+        key = keyAlpha;
+    }
+    sortTable(elem, key(colIndex));
+}
+
+function showAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(showExtras);
+}
+
+function hideAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(hideExtras);
+}
+
+function showExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.remove('collapsed');
+    expandcollapse.classList.remove('expander');
+    expandcollapse.classList.add('collapser');
+}
+
+function hideExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.add('collapsed');
+    expandcollapse.classList.remove('collapser');
+    expandcollapse.classList.add('expander');
+}
+
+function showFilters() {
+    const filterItems = document.getElementsByClassName('filter');
+    for (let i = 0; i < filterItems.length; i++)
+        filterItems[i].hidden = false;
+}
+
+function addCollapse() {
+    // Add links for show/hide all
+    const resulttable = find('table#results-table');
+    const showhideall = document.createElement('p');
+    showhideall.innerHTML = '<a href="javascript:showAllExtras()">Show all details</a> / ' +
+                            '<a href="javascript:hideAllExtras()">Hide all details</a>';
+    resulttable.parentElement.insertBefore(showhideall, resulttable);
+
+    // Add show/hide link to each result
+    findAll('.col-result').forEach(function(elem) {
+        const collapsed = getQueryParameter('collapsed') || 'Passed';
+        const extras = elem.parentNode.nextElementSibling;
+        const expandcollapse = document.createElement('span');
+        if (extras.classList.contains('collapsed')) {
+            expandcollapse.classList.add('expander');
+        } else if (collapsed.includes(elem.innerHTML)) {
+            extras.classList.add('collapsed');
+            expandcollapse.classList.add('expander');
+        } else {
+            expandcollapse.classList.add('collapser');
+        }
+        elem.appendChild(expandcollapse);
+
+        elem.addEventListener('click', function(event) {
+            if (event.currentTarget.parentNode.nextElementSibling.classList.contains('collapsed')) {
+                showExtras(event.currentTarget);
+            } else {
+                hideExtras(event.currentTarget);
+            }
+        });
+    });
+}
+
+function getQueryParameter(name) {
+    const match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+
+function init () { // eslint-disable-line no-unused-vars
+    resetSortHeaders();
+
+    addCollapse();
+
+    showFilters();
+
+    sortColumn(find('.initial-sort'));
+
+    findAll('.sortable').forEach(function(elem) {
+        elem.addEventListener('click',
+            function() {
+                sortColumn(elem);
+            }, false);
+    });
+}
+
+function sortTable(clicked, keyFunc) {
+    const rows = findAll('.results-table-row');
+    const reversed = !clicked.classList.contains('asc');
+    const sortedRows = sort(rows, keyFunc, reversed);
+    /* Whole table is removed here because browsers acts much slower
+     * when appending existing elements.
+     */
+    const thead = document.getElementById('results-table-head');
+    document.getElementById('results-table').remove();
+    const parent = document.createElement('table');
+    parent.id = 'results-table';
+    parent.appendChild(thead);
+    sortedRows.forEach(function(elem) {
+        parent.appendChild(elem);
+    });
+    document.getElementsByTagName('BODY')[0].appendChild(parent);
+}
+
+function sort(items, keyFunc, reversed) {
+    const sortArray = items.map(function(item, i) {
+        return [keyFunc(item), i];
+    });
+
+    sortArray.sort(function(a, b) {
+        const keyA = a[0];
+        const keyB = b[0];
+
+        if (keyA == keyB) return 0;
+
+        if (reversed) {
+            return keyA < keyB ? 1 : -1;
+        } else {
+            return keyA > keyB ? 1 : -1;
+        }
+    });
+
+    return sortArray.map(function(item) {
+        const index = item[1];
+        return items[index];
+    });
+}
+
+function keyAlpha(colIndex) {
+    return function(elem) {
+        return elem.childNodes[1].childNodes[colIndex].firstChild.data.toLowerCase();
+    };
+}
+
+function keyLink(colIndex) {
+    return function(elem) {
+        const dataCell = elem.childNodes[1].childNodes[colIndex].firstChild;
+        return dataCell == null ? '' : dataCell.innerText.toLowerCase();
+    };
+}
+
+function keyResult(colIndex) {
+    return function(elem) {
+        const strings = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed',
+            'Skipped', 'Passed'];
+        return strings.indexOf(elem.childNodes[1].childNodes[colIndex].firstChild.data);
+    };
+}
+
+function resetSortHeaders() {
+    findAll('.sort-icon').forEach(function(elem) {
+        elem.parentNode.removeChild(elem);
+    });
+    findAll('.sortable').forEach(function(elem) {
+        const icon = document.createElement('div');
+        icon.className = 'sort-icon';
+        icon.textContent = 'vvv';
+        elem.insertBefore(icon, elem.firstChild);
+        elem.classList.remove('desc', 'active');
+        elem.classList.add('asc', 'inactive');
+    });
+}
+
+function toggleSortStates(elem) {
+    //if active, toggle between asc and desc
+    if (elem.classList.contains('active')) {
+        elem.classList.toggle('asc');
+        elem.classList.toggle('desc');
+    }
+
+    //if inactive, reset all other functions and add ascending active
+    if (elem.classList.contains('inactive')) {
+        resetSortHeaders();
+        elem.classList.remove('inactive');
+        elem.classList.add('active');
+    }
+}
+
+function isAllRowsHidden(value) {
+    return value.hidden == false;
+}
+
+function filterTable(elem) { // eslint-disable-line no-unused-vars
+    const outcomeAtt = 'data-test-result';
+    const outcome = elem.getAttribute(outcomeAtt);
+    const classOutcome = outcome + ' results-table-row';
+    const outcomeRows = document.getElementsByClassName(classOutcome);
+
+    for(let i = 0; i < outcomeRows.length; i++){
+        outcomeRows[i].hidden = !elem.checked;
+    }
+
+    const rows = findAll('.results-table-row').filter(isAllRowsHidden);
+    const allRowsHidden = rows.length == 0 ? true : false;
+    const notFoundMessage = document.getElementById('not-found-message');
+    notFoundMessage.hidden = !allRowsHidden;
+}
+</script>
+    <h1>1447report.html</h1>
+    <p>Report generated on 21-Mar-2021 at 11:13:30 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a> v3.1.1</p>
+    <h2>Environment</h2>
+    <table id="environment">
+      <tr>
+        <td>JAVA_HOME</td>
+        <td>C:\Program Files\Java\jdk1.8.0_251</td></tr>
+      <tr>
+        <td>Packages</td>
+        <td>{"pluggy": "0.13.1", "py": "1.9.0", "pytest": "6.1.2"}</td></tr>
+      <tr>
+        <td>Platform</td>
+        <td>Windows-10-10.0.18362-SP0</td></tr>
+      <tr>
+        <td>Plugins</td>
+        <td>{"html": "3.1.1", "metadata": "1.11.0", "rerunfailures": "9.1.1"}</td></tr>
+      <tr>
+        <td>Python</td>
+        <td>3.7.2</td></tr></table>
+    <h2>Summary</h2>
+    <p>所属部门: 开发管理中心</p>
+    <p>测试人员: 测试组</p>
+    <p>1 tests ran in 15.99 seconds. </p>
+    <p class="filter" hidden="true">(Un)check the boxes to filter the results.</p><input checked="true" class="filter" data-test-result="passed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="passed">0 passed</span>, <input checked="true" class="filter" data-test-result="skipped" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="skipped">0 skipped</span>, <input checked="true" class="filter" data-test-result="failed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="failed">1 failed</span>, <input checked="true" class="filter" data-test-result="error" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="error">0 errors</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xfailed">0 expected failures</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xpassed">0 unexpected passes</span>, <input checked="true" class="filter" data-test-result="rerun" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="rerun">0 rerun</span>
+    <h2>Results</h2>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable result initial-sort" col="result">Result</th>
+          <th class="sortable" col="name">Test</th>
+          <th>Description</th>
+          <th class="sortable time" col="time">Time</th>
+          <th class="sortable" col="duration">Duration</th></tr>
+        <tr hidden="true" id="not-found-message">
+          <th colspan="5">No results found. Try to check the filters</th></tr></thead>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">cases/goodlife/test_003_DiscountApply.py::test_003_DiscountApply</td>
+          <td class="col-duration">15.77</td>
+          <td class="col-time">2021-03-21 03:13:30.776505</td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">test_host = &#x27;23&#x27;<br/><br/>    def test_003_DiscountApply(test_host):<br/>        i = 0<br/>        cases_list = data_list(test_host)<br/>        case = cases_list.cases[i][&quot;case&quot;]<br/>        expection = cases_list.cases[i][&quot;expection&quot;]<br/>        expection2 = cases_list.cases[i][&quot;expection2&quot;]<br/>        expection3 = cases_list.cases[i][&quot;expection3&quot;]<br/>        expection4 = cases_list.cases[i][&quot;expection4&quot;]<br/>        resp = goodlife_req(test_host,api,case)<br/>        # print(resp.json())<br/>        assert resp.status_code == 200, &quot;相应状态不正确{}&quot;.format(resp.status_code)<br/>        # assert expection ==<br/>        dctId = resp.json()[&quot;data&quot;][&quot;dctId&quot;]<br/>        time.sleep(10)<br/>        # print(db_select_002(dctId))<br/>        # print(expection2)<br/>&gt;       assert expection == db_select_001(dctId)<br/><span class="error">E       AssertionError: assert &#x27;1&#x27; == None</span><br/><span class="error">E        +  where None = db_select_001(&#x27;0dd4737952114f6db30795d59451f8b7&#x27;)</span><br/><br/>cases\goodlife\test_003_DiscountApply.py:57: AssertionError<br/> ------------------------------Captured stdout call------------------------------ <br/>Error:unable to fetch data
+<br/> -------------------------------Captured log call-------------------------------- <br/>INFO     F:/autotest/scripts1/log/goodlife/20210321_goodlife_all.log:goodlife_req.py:30 加密地址：http://sit.elimen.com.cn:8899/plumber/cxf/mockit/reqEncrySign
+INFO     F:/autotest/scripts1/log/goodlife/20210321_goodlife_all.log:goodlife_req.py:31 加密报文：{&#x27;channel&#x27;: &#x27;00000009&#x27;, &#x27;data&#x27;: {&#x27;commonInput&#x27;: {&#x27;version&#x27;: &#x27;1.0.0&#x27;, &#x27;channel&#x27;: &#x27;00000009&#x27;, &#x27;reqDate&#x27;: &#x27;20210321&#x27;, &#x27;reqTime&#x27;: &#x27;111314&#x27;, &#x27;remark&#x27;: &#x27;34225&#x27;}, &#x27;bizCode&#x27;: &#x27;YJES20200612001&#x27;, &#x27;asset&#x27;: {&#x27;assetCode&#x27;: &#x27;43505&#x27;, &#x27;assetType&#x27;: &#x27;1&#x27;, &#x27;ownerIdType&#x27;: &#x27;C&#x27;, &#x27;ownerIdCode&#x27;: &#x27;110105199003076670&#x27;, &#x27;ownerName&#x27;: &#x27;渤海一号科技有限公司&#x27;, &#x27;pmtType&#x27;: &#x27;5&#x27;, &#x27;assetAmt&#x27;: &#x27;2600&#x27;, &#x27;acctPeriod&#x27;: &#x27;60&#x27;, &#x27;debtorIdType&#x27;: &#x27;C&#x27;, &#x27;debtorIdCode&#x27;: &#x27;91440400MA4WMQXB44&#x27;, &#x27;debtorName&#x27;: &#x27;优选好生活科技（珠海）有限公司&#x27;, &#x27;contractNo&#x27;: &#x27;bfd424411e3e4c7092c9c64a98c45501&#x27;, &#x27;contractName&#x27;: &#x27;佣金e收产品服务协议&#x27;, &#x27;insPmtMode&#x27;: &#x27;1&#x27;, &#x27;insAmtMax&#x27;: &#x27;10.00&#x27;, &#x27;importor&#x27;: &#x27;1&#x27;, &#x27;prodCode&#x27;: &#x27;EBT01&#x27;, &#x27;bizId&#x27;: &#x27;24802&#x27;}, &#x27;discountInfo&#x27;: {&#x27;dctCode&#x27;: &#x27;88836&#x27;, &#x27;sellerName&#x27;: &#x27;渤海一号科技有限公司&#x27;, &#x27;sellerCertType&#x27;: &#x27;C&#x27;, &#x27;sellerCertNo&#x27;: &#x27;110105199003076670&#x27;, &#x27;sellerAcctNo&#x27;: &#x27;&#x27;, &#x27;finCode&#x27;: &#x27;CBHB&#x27;, &#x27;finName&#x27;: &#x27;渤海银行股份有限公司&#x27;, &#x27;finCertType&#x27;: &#x27;C&#x27;, &#x27;finCertNo&#x27;: &#x27;911200007109339563&#x27;, &#x27;dctAmt&#x27;: &#x27;2600&#x27;, &#x27;expDate&#x27;: &#x27;20210520&#x27;, &#x27;dctDate&#x27;: &#x27;20210321&#x27;, &#x27;dctDays&#x27;: &#x27;60&#x27;, &#x27;settMode&#x27;: &#x27;1&#x27;, &#x27;remark&#x27;: &#x27;融资测试&#x27;, &#x27;contNo&#x27;: &#x27;contNo-003----测试融资协议编号&#x27;}, &#x27;housings&#x27;: [{&#x27;applyNo&#x27;: &#x27;DL0111024&#x27;, &#x27;buildName&#x27;: &#x27;嘉裕公馆&#x27;, &#x27;unitNo&#x27;: &#x27;2号楼-1-101&#x27;, &#x27;preSaleSpace&#x27;: &#x27;120&#x27;, &#x27;ownerName&#x27;: &#x27;弟弟&#x27;, &#x27;contractPrice&#x27;: &#x27;1000000.03&#x27;, &#x27;actSubDate&#x27;: &#x27;20200324&#x27;, &#x27;subPassDate&#x27;: &#x27;20200325&#x27;, &#x27;actSignDate&#x27;: &#x27;20200326&#x27;, &#x27;signPassDate&#x27;: &#x27;20200327&#x27;, &#x27;totalCommission&#x27;: &#x27;20200.01&#x27;, &#x27;commission&#x27;: &#x27;10008.02&#x27;, &#x27;settleNode&#x27;: &#x27;回款&#x27;, &#x27;salesman&#x27;: &#x27;销售1号&#x27;, &#x27;houseFiles&#x27;: [{&#x27;hfileType&#x27;: &#x27;28&#x27;, &#x27;hfileName&#x27;: &#x27;001-0.pdf&#x27;, &#x27;hfileUrl&#x27;: &#x27;https://kfcdn.lifeat.cn/%E4%BF%9D%E7%90%86%E5%8D%8F%E8%AE%AEHSHELMEMARK2020060500000001-0.pdf&#x27;}]}], &#x27;files&#x27;: [{&#x27;fileType&#x27;: &#x27;2&#x27;, &#x27;fileUrl&#x27;: &#x27;/00000009/cont/测试发票.jpg&#x27;, &#x27;fileName&#x27;: &#x27;测试发票.jpg&#x27;, &#x27;fileData&#x27;: {&#x27;openType&#x27;: &#x27;1&#x27;, &#x27;buyerName&#x27;: &#x27;优选好生活科技（珠海）有限公司&#x27;, &#x27;custSignName&#x27;: &#x27;1&#x27;, &#x27;invAmt&#x27;: &#x27;10000000&#x27;, &#x27;invCode&#x27;: &#x27;5667755987&#x27;, &#x27;invContent&#x27;: &#x27;1&#x27;, &#x27;invDate&#x27;: &#x27;20200501&#x27;, &#x27;invNo&#x27;: &#x27;62288130&#x27;, &#x27;isCheckSign&#x27;: &#x27;1&#x27;, &#x27;sellerName&#x27;: &#x27;渤海一号科技有限公司&#x27;, &#x27;taxRate&#x27;: &#x27;1&#x27;, &#x27;taxAmt&#x27;: &#x27;1&#x27;, &#x27;invType&#x27;: &#x27;01&#x27;}}, {&#x27;fileType&#x27;: &#x27;5&#x27;, &#x27;fileUrl&#x27;: &#x27;/00000009/cont/融资合同（好生活）-渤海银行股份有限公司.pdf&#x27;, &#x27;fileName&#x27;: &#x27;合作协议-优选好生活科技（珠海）有限公司.pdf&#x27;, &#x27;fileData&#x27;: {&#x27;acceptorName&#x27;: &#x27;渤海一号科技有限公司&#x27;, &#x27;isCheckSign&#x27;: &#x27;1&#x27;, &#x27;contName&#x27;: &#x27;1&#x27;, &#x27;signDate&#x27;: &#x27;20190831&#x27;, &#x27;signOnline&#x27;: &#x27;1&#x27;, &#x27;sponsorName&#x27;: &#x27;优选好生活科技（珠海）有限公司&#x27;}}, {&#x27;fileType&#x27;: &#x27;6&#x27;, &#x27;fileUrl&#x27;: &#x27;/00000009/cont/融资合同（好生活）-渤海银行股份有限公司.pdf&#x27;, &#x27;fileName&#x27;: &#x27;渠道合作函/分销函-优选好生活科技（珠海）有限公司.pdf&#x27;, &#x27;fileData&#x27;: {&#x27;coopEndDate&#x27;: &#x27;20200401&#x27;, &#x27;coopStartDate&#x27;: &#x27;20200331&#x27;, &#x27;custSignName&#x27;: &#x27;优选好生活科技（珠海）有限公司&#x27;, &#x27;isCheckSign&#x27;: &#x27;1&#x27;, &#x27;projName&#x27;: &#x27;2&#x27;, &#x27;receiverName&#x27;: &#x27;渤海一号科技有限公司&#x27;, &#x27;signOnline&#x27;: &#x27;1&#x27;, &#x27;signPartyName&#x27;: &#x27;优选好生活科技（珠海）有限公司&#x27;, &#x27;settInfos&#x27;: [{&#x27;settNode&#x27;: &#x27;1&#x27;, &#x27;settStd&#x27;: &#x27;1&#x27;, &#x27;prodName&#x27;: &#x27;1&#x27;}]}}, {&#x27;fileType&#x27;: &#x27;7&#x27;, &#x27;fileUrl&#x27;: &#x27;/00000009/cont/融资合同（好生活）-渤海银行股份有限公司.pdf&#x27;, &#x27;fileName&#x27;: &#x27;佣金确认单-优选好生活科技（珠海）有限公司.pdf&#x27;, &#x27;fileData&#x27;: {&#x27;contName&#x27;: &#x27;渤海一号科技有限公司&#x27;, &#x27;custSignName&#x27;: &#x27;优选好生活科技（珠海）有限公司&#x27;, &#x27;isCheckSign&#x27;: &#x27;1&#x27;, &#x27;subDate&#x27;: &#x27;20200201&#x27;, &#x27;signOnline&#x27;: &#x27;1&#x27;}}, {&#x27;fileType&#x27;: &#x27;8&#x27;, &#x27;fileUrl&#x27;: &#x27;/00000009/cont/融资合同（好生活）-渤海银行股份有限公司.pdf&#x27;, &#x27;fileName&#x27;: &#x27;付款审批表-优选好生活科技（珠海）有限公司.pdf&#x27;, &#x27;fileData&#x27;: {&#x27;buildName&#x27;: &#x27;1&#x27;, &#x27;commNum&#x27;: &#x27;1&#x27;, &#x27;commission&#x27;: &#x27;1&#x27;, &#x27;dctAmt&#x27;: &#x27;1&#x27;, &#x27;isCheckSign&#x27;: &#x27;0&#x27;, &#x27;organName&#x27;: &#x27;1&#x27;, &#x27;payee&#x27;: &#x27;渤海一号科技有限公司&#x27;, &#x27;payer&#x27;: &#x27;优选好生活科技（珠海）有限公司&#x27;, &#x27;pmtType&#x27;: &#x27;1&#x27;, &#x27;startDate&#x27;: &#x27;20200401&#x27;, &#x27;unitNo&#x27;: &#x27;1&#x27;}}, {&#x27;fileType&#x27;: &#x27;14&#x27;, &#x27;fileUrl&#x27;: &#x27;/00000009/cont/付款承诺函（渤海银行版已盖章）.pdf&#x27;, &#x27;fileName&#x27;: &#x27;付款承诺函（渤海银行版已盖章）.pdf&#x27;}, {&#x27;fileType&#x27;: &#x27;16&#x27;, &#x27;fileUrl&#x27;: &#x27;/00000009/cont/国内反向保理业务融资申请书(已盖章).pdf&#x27;, &#x27;fileName&#x27;: &#x27;国内反向保理业务融资申请书(已盖章).pdf&#x27;}, {&#x27;fileType&#x27;: &#x27;17&#x27;, &#x27;fileUrl&#x27;: &#x27;/00000009/cont/债权转让通知书(已盖章).pdf&#x27;, &#x27;fileName&#x27;: &#x27;债权转让通知书(已盖章).pdf&#x27;}, {&#x27;fileType&#x27;: &#x27;18&#x27;, &#x27;fileUrl&#x27;: &#x27;/00000009/cont/壹链盟平台e单开具协议(已盖章).pdf&#x27;, &#x27;fileName&#x27;: &#x27;壹链盟平台e单开具协议(已盖章).pdf&#x27;}]}}
+INFO     F:/autotest/scripts1/log/goodlife/20210321_goodlife_all.log:goodlife_req.py:67 业务地址：http://sit.elimen.com.cn:8899/plumber/cxf/chnel/v1/dct/discountApply
+INFO     F:/autotest/scripts1/log/goodlife/20210321_goodlife_all.log:goodlife_req.py:68 业务报文：{&quot;channelCode&quot;: &quot;00000009&quot;, &quot;key&quot;: &quot;XKK9kcWL4cJrW5aZGEj5VJ1T03LrHg61thRayhs+9+TnM10Yq4Y0H91Nf6g5U6E77syqrYm4QUWz0ZikDSL9/0lD0ysTKFCEWIMfncUvil75gIxbHPB2HlK+Bdwp1iTe1SrD3sDW1Q23es+unOnbv1HpF68lp7GWFbsKMwbfge0=&quot;, &quot;content&quot;: &quot;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&quot;, &quot;signStr&quot;: &quot;tYCbpgkMWfugSWvBIIj74GGud8g6QY/fnyfSJKGjxeV6C5OOPQD9C8HFUSaeEJo/hAgxgDt5Y6vZjvOYMdDeTdvvkzbLdB8uJaMSXVINX5aWhPEbVzOMj4YEf4MsFtPGQn/SpZPYeEkxC0ZpKPG3EHjjr7vdET0Kf50tMOPvl/A=&quot;}
+INFO     F:/autotest/scripts1/log/goodlife/20210321_goodlife_all.log:goodlife_req.py:48 解密地址：http://sit.elimen.com.cn:8899/plumber/cxf/mockit/rspDecry
+INFO     F:/autotest/scripts1/log/goodlife/20210321_goodlife_all.log:goodlife_req.py:49 解密报文：{&#x27;rspCode&#x27;: &#x27;S&#x27;, &#x27;message&#x27;: &#x27;ok&#x27;, &#x27;rspTime&#x27;: &#x27;20210321111319&#x27;, &#x27;data&#x27;: {&#x27;dctId&#x27;: &#x27;0dd4737952114f6db30795d59451f8b7&#x27;}}<br/></div></td></tr></tbody></table></body></html>

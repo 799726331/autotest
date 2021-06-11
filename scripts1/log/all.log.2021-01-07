@@ -1,0 +1,15 @@
+2021-01-07 16:18:54,582 - F:/autotest/scripts1/utils/log.py[line:82] - DEBUG: debug
+2021-01-07 16:18:54,583 - F:/autotest/scripts1/utils/log.py[line:83] - INFO: info
+2021-01-07 16:18:54,583 - F:/autotest/scripts1/utils/log.py[line:84] - WARNING: 警告
+2021-01-07 16:18:54,583 - F:/autotest/scripts1/utils/log.py[line:85] - ERROR: 报错
+2021-01-07 16:18:54,583 - F:/autotest/scripts1/utils/log.py[line:86] - CRITICAL: 严重
+2021-01-07 16:19:24,270 - F:/autotest/scripts1/utils/log.py[line:82] - DEBUG: debug
+2021-01-07 16:19:24,270 - F:/autotest/scripts1/utils/log.py[line:83] - INFO: info
+2021-01-07 16:19:24,270 - F:/autotest/scripts1/utils/log.py[line:84] - WARNING: 警告
+2021-01-07 16:19:24,270 - F:/autotest/scripts1/utils/log.py[line:85] - ERROR: 报错
+2021-01-07 16:19:24,270 - F:/autotest/scripts1/utils/log.py[line:86] - CRITICAL: 严重
+2021-01-07 16:19:43,185 - F:/autotest/scripts1/utils/log.py[line:82] - DEBUG: debug
+2021-01-07 16:19:43,186 - F:/autotest/scripts1/utils/log.py[line:83] - INFO: info
+2021-01-07 16:19:43,186 - F:/autotest/scripts1/utils/log.py[line:84] - WARNING: 警告
+2021-01-07 16:19:43,186 - F:/autotest/scripts1/utils/log.py[line:85] - ERROR: 报错
+2021-01-07 16:19:43,186 - F:/autotest/scripts1/utils/log.py[line:86] - CRITICAL: 严重

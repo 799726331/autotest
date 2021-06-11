@@ -1,0 +1,10 @@
+2021-05-25 10:09:03,985 - F:\autotest\scripts1\utils\log.py[line:84] - DEBUG: debug
+2021-05-25 10:09:03,988 - F:\autotest\scripts1\utils\log.py[line:85] - INFO: info
+2021-05-25 10:09:03,988 - F:\autotest\scripts1\utils\log.py[line:86] - WARNING: 警告
+2021-05-25 10:09:03,988 - F:\autotest\scripts1\utils\log.py[line:87] - ERROR: 报错
+2021-05-25 10:09:03,988 - F:\autotest\scripts1\utils\log.py[line:88] - CRITICAL: 严重
+2021-05-25 10:13:52,249 - F:\autotest\scripts1\utils\log.py[line:84] - DEBUG: debug
+2021-05-25 10:13:52,250 - F:\autotest\scripts1\utils\log.py[line:85] - INFO: info
+2021-05-25 10:13:52,250 - F:\autotest\scripts1\utils\log.py[line:86] - WARNING: 警告
+2021-05-25 10:13:52,250 - F:\autotest\scripts1\utils\log.py[line:87] - ERROR: 报错
+2021-05-25 10:13:52,250 - F:\autotest\scripts1\utils\log.py[line:88] - CRITICAL: 严重
