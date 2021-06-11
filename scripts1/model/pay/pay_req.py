@@ -2,7 +2,7 @@
 '''
 @File    :  pay_req.py
 @Time    :  2020/11/23 10:02:28
-@Author  :  Jadenyu 
+@Author  :  lzx
 @Version :  Python 3.7.6
 @State   :  支付平台公共请求 
 '''

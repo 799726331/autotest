@@ -2,7 +2,7 @@
 '''
 @File    :   run.py
 @Time    :   2020/08/05 11:30:20
-@Author  :   Jadenyu 
+@Author  :   luzx
 @Version :   Python 3.7.6
 @State   :   运行文件：
                 1. case_dir：用例项目路径：
